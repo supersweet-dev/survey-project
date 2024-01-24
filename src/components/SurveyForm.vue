@@ -1,7 +1,7 @@
 <script setup>
 // supabaseClient.js
 import { createClient } from '@supabase/supabase-js';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const supabaseUrl = 'https://nppobcantxohrbjqjfni.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wcG9iY2FudHhvaHJianFqZm5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDYxMDQwNjEsImV4cCI6MjAyMTY4MDA2MX0.dUp7XxmLfOJ5JEKKcd0xSMkrl0iArsKyT2wVfsZVJaw';
@@ -42,6 +42,25 @@ const sendResponse = async () => {
     // Add any post-submission logic here
   }
 }
+async function getRandomQuestionCombination() {
+  const { data, error } = await supabase
+    .rpc('random_question_combination').single(); // Using a stored procedure
+
+  if (error) {
+    console.error('Error fetching random question combination:', error);
+    return null;
+  }
+
+  return data;
+}
+onMounted(async ()=>{
+  const randomQ = await getRandomQuestionCombination()
+  console.log(randomQ)
+  await supabase
+  .from('question_combinations')
+  .update({counter: randomQ.counter + 1})
+  .eq('id', randomQ.id)
+})
 
 </script>
 <template>
