@@ -1,52 +1,48 @@
-<script>
-import emailjs from 'emailjs-com';
+<script setup>
+// supabaseClient.js
+import { createClient } from '@supabase/supabase-js';
+import { ref } from 'vue';
 
-export default {
-  data() {
-    return {
-      showGreeting: true,
-      currentQuestionIndex: 0,
-      answers: {},
-      questions: [
-        { id: 'birthday', label: 'Enter your birthday:', type: 'date' },
-        {
-          id: 'gender',
-          label: 'Select your gender:',
-          type: 'select',
-          placeholder: 'Please select one',
-          options: ['Male', 'Female', 'Non-Binary (NB)', 'Choose not to disclose']
-        },
-        // Add more questions here in the same format
-      ],
-    };
+const supabaseUrl = 'https://nppobcantxohrbjqjfni.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wcG9iY2FudHhvaHJianFqZm5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDYxMDQwNjEsImV4cCI6MjAyMTY4MDA2MX0.dUp7XxmLfOJ5JEKKcd0xSMkrl0iArsKyT2wVfsZVJaw';
+const supabase = createClient(supabaseUrl, supabaseKey);
+const answers = ref({});
+const showGreeting = ref(true)
+const currentQuestionIndex = ref(0)
+const questions =[
+  { id: 'date_of_birth', label: 'Enter your birthday:', type: 'date' },
+  {
+    id: 'gender',
+    label: 'Select your gender:',
+    type: 'select',
+    placeholder: 'Please select one',
+    options: ['Male', 'Female', 'Non-Binary (NB)', 'Choose not to disclose']
   },
-  methods: {
-    beginSurvey() {
-      this.showGreeting = false;
-    },
-    nextQuestion() {
-      if (this.currentQuestionIndex === this.questions.length - 1) {
-        this.sendEmail();
-      } else {
-        this.currentQuestionIndex++;
-      }
-    },
-    sendEmail() {
-      const templateParams = {
-        ...this.answers,
-        to_email: 'pentagr4mi@gmail.com',
-      };
-
-      emailjs.send('service_kjf34hk', 'template_bmvrb3f', templateParams, 'L_LV-itI8-cF7grnZ')
-        .then((response) => {
-          this.currentQuestionIndex++;
-          console.log('SUCCESS!', response.status, response.text);
-        }, (error) => {
-          console.log('FAILED...', error);
-        });
-    }
+]
+const beginSurvey = () => {
+  showGreeting.value = false
+}
+const nextQuestion = () => {
+  if (currentQuestionIndex.value === questions.length - 1) {
+    sendResponse()
+  } else {
+    currentQuestionIndex.value++;
   }
-};
+}
+const sendResponse = async () => {
+  console.log(answers.value)
+  const { data, error } = await supabase
+    .from('responses')
+    .insert([answers.value]);
+
+  if (error) {
+    console.error('Error submitting to Supabase:', error);
+  } else {
+    console.log('Submitted to Supabase:', data);
+    // Add any post-submission logic here
+  }
+}
+
 </script>
 <template>
   <div class="max-w-md mx-auto mt-10 p-6 rounded-lg shadow-md bg-white">
